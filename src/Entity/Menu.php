@@ -3,10 +3,10 @@
 namespace App\Entity;
 
 use App\Repository\MenuRepository;
-use Doctrine\ORM\Mapping as ORM;
 use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: MenuRepository::class)]
 class Menu
@@ -38,7 +38,7 @@ class Menu
     #[ORM\JoinColumn(nullable: true)]
     private ?Restaurant $restaurant = null;
 
-    #[ORM\OneToMany(targetEntity: MenuDish::class, mappedBy: 'menu', cascade: ['persist','remove'])]
+    #[ORM\OneToMany(targetEntity: MenuDish::class, mappedBy: 'menu', cascade: ['persist', 'remove'])]
     private Collection $menuDishes;
 
     public function __construct()

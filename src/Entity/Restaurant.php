@@ -3,10 +3,10 @@
 namespace App\Entity;
 
 use App\Repository\RestaurantRepository;
-use Doctrine\ORM\Mapping as ORM;
+use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use DateTimeInterface;
+use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: RestaurantRepository::class)]
 class Restaurant
@@ -40,19 +40,19 @@ class Restaurant
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?DateTimeInterface $updatedAt = null;
 
-    #[ORM\OneToMany(targetEntity: Picture::class, mappedBy: 'restaurant', cascade: ['persist','remove'])]
+    #[ORM\OneToMany(targetEntity: Picture::class, mappedBy: 'restaurant', cascade: ['persist', 'remove'])]
     private Collection $pictures;
 
-    #[ORM\OneToMany(targetEntity: Menu::class, mappedBy: 'restaurant', cascade: ['persist','remove'])]
+    #[ORM\OneToMany(targetEntity: Menu::class, mappedBy: 'restaurant', cascade: ['persist', 'remove'])]
     private Collection $menus;
 
-    #[ORM\OneToMany(targetEntity: Category::class, mappedBy: 'restaurant', cascade: ['persist','remove'])]
+    #[ORM\OneToMany(targetEntity: Category::class, mappedBy: 'restaurant', cascade: ['persist', 'remove'])]
     private Collection $categories;
 
-    #[ORM\OneToMany(targetEntity: Dish::class, mappedBy: 'restaurant', cascade: ['persist','remove'])]
+    #[ORM\OneToMany(targetEntity: Dish::class, mappedBy: 'restaurant', cascade: ['persist', 'remove'])]
     private Collection $dishes;
 
-    #[ORM\OneToMany(targetEntity: Reservation::class, mappedBy: 'restaurant', cascade: ['persist','remove'])]
+    #[ORM\OneToMany(targetEntity: Reservation::class, mappedBy: 'restaurant', cascade: ['persist', 'remove'])]
     private Collection $reservations;
 
     #[ORM\OneToOne(targetEntity: User::class, inversedBy: 'restaurant')]

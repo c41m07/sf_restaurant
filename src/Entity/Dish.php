@@ -3,10 +3,10 @@
 namespace App\Entity;
 
 use App\Repository\DishRepository;
-use Doctrine\ORM\Mapping as ORM;
 use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: DishRepository::class)]
 class Dish
@@ -38,7 +38,7 @@ class Dish
     #[ORM\JoinColumn(nullable: true)]
     private ?Restaurant $restaurant = null;
 
-    #[ORM\OneToMany(targetEntity: DishCategory::class, mappedBy: 'dish', cascade: ['persist','remove'])]
+    #[ORM\OneToMany(targetEntity: DishCategory::class, mappedBy: 'dish', cascade: ['persist', 'remove'])]
     private Collection $dishCategories;
 
     public function __construct()
