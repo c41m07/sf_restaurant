@@ -16,40 +16,40 @@ class Restaurant
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['restaurant.read', 'user.read'])]
+    #[Groups(['restaurant:list', 'restaurant:detail', 'user:read', 'category:detail', 'dish:detail', 'menu:detail', 'picture:detail', 'reservation:detail'])]
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 36, unique: true)]
-    #[Groups(['restaurant.read', 'restaurant.write', 'user.read'])]
+    #[Groups(['restaurant:list', 'restaurant:detail', 'restaurant:write', 'user:read', 'category:detail', 'dish:detail', 'menu:detail', 'picture:detail', 'reservation:detail'])]
     private string $uuid;
 
     #[ORM\Column(type: 'string', length: 32)]
-    #[Groups(['restaurant.read', 'restaurant.write', 'user.read'])]
+    #[Groups(['restaurant:list', 'restaurant:detail', 'restaurant:write', 'user:read', 'category:detail', 'dish:detail', 'menu:detail', 'picture:detail', 'reservation:detail'])]
     private string $name;
 
     #[ORM\Column(type: 'text')]
-    #[Groups(['restaurant.read', 'restaurant.write', 'user.read'])]
+    #[Groups(['restaurant:detail', 'restaurant:write', 'user:read'])]
     private string $description;
 
     #[ORM\Column(type: 'json')]
-    #[Groups(['restaurant.read', 'restaurant.write', 'user.read'])]
+    #[Groups(['restaurant:detail', 'restaurant:write', 'user:read'])]
     private array $openingHoursAm = [];
 
     #[ORM\Column(type: 'json')]
-    #[Groups(['restaurant.read', 'restaurant.write', 'user.read'])]
+    #[Groups(['restaurant:detail', 'restaurant:write', 'user:read'])]
     private array $openingHoursPm = [];
 
     #[ORM\Column(type: 'smallint')]
-    #[Groups(['restaurant.read', 'restaurant.write', 'user.read'])]
+    #[Groups(['restaurant:detail', 'restaurant:write', 'user:read'])]
     #[SerializedName('max_guests')]
     private int $maxGuests;
 
     #[ORM\Column(type: 'datetime')]
-    #[Groups(['restaurant.read', 'user.read'])]
+    #[Groups(['restaurant:detail', 'user:read'])]
     private DateTimeInterface $createdAt;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
-    #[Groups(['restaurant.read', 'user.read'])]
+    #[Groups(['restaurant:detail', 'user:read'])]
     private ?DateTimeInterface $updatedAt = null;
 
     #[ORM\OneToMany(targetEntity: Picture::class, mappedBy: 'restaurant', cascade: ['persist', 'remove'])]
@@ -69,7 +69,7 @@ class Restaurant
 
     #[ORM\OneToOne(targetEntity: User::class, inversedBy: 'restaurant')]
     #[ORM\JoinColumn(nullable: false, unique: true)]
-    #[Groups(['restaurant.read', 'user.read'])]
+    #[Groups(['restaurant:detail', 'user:read'])]
     private User $owner;
 
     public function __construct()

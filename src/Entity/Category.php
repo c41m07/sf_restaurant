@@ -7,6 +7,7 @@ use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
 class Category
@@ -14,25 +15,32 @@ class Category
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['category:list', 'category:detail', 'dish:detail'])]
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 36, unique: true)]
+    #[Groups(['category:list', 'category:detail', 'category:write', 'dish:detail'])]
     private string $uuid;
 
     #[ORM\Column(type: 'string', length: 32)]
+    #[Groups(['category:list', 'category:detail', 'category:write', 'dish:detail'])]
     private string $title;
 
     #[ORM\Column(type: 'datetime')]
+    #[Groups(['category:list', 'category:detail'])]
     private DateTimeInterface $createdAt;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[Groups(['category:detail'])]
     private ?DateTimeInterface $updatedAt = null;
 
     #[ORM\ManyToOne(targetEntity: Restaurant::class, inversedBy: 'categories')]
     #[ORM\JoinColumn(nullable: true)]
+    #[Groups(['category:detail', 'category:write'])]
     private ?Restaurant $restaurant = null;
 
     #[ORM\OneToMany(targetEntity: DishCategory::class, mappedBy: 'category', cascade: ['persist', 'remove'])]
+    #[Groups(['category:detail'])]
     private Collection $dishCategories;
 
     public function __construct()

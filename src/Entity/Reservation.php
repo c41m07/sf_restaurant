@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\ReservationRepository;
 use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: ReservationRepository::class)]
 class Reservation
@@ -12,38 +13,49 @@ class Reservation
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['reservation:list', 'reservation:detail', 'restaurant:detail'])]
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 36, unique: true)]
+    #[Groups(['reservation:list', 'reservation:detail', 'reservation:write', 'restaurant:detail'])]
     private string $uuid;
 
     #[ORM\Column(type: 'smallint')]
+    #[Groups(['reservation:list', 'reservation:detail', 'reservation:write'])]
     private int $guestNumber;
 
     #[ORM\Column(type: 'date')]
+    #[Groups(['reservation:list', 'reservation:detail', 'reservation:write'])]
     private \DateTimeInterface $reservationDate;
 
     #[ORM\Column(type: 'time')]
+    #[Groups(['reservation:detail', 'reservation:write'])]
     private \DateTimeInterface $reservationTime;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Groups(['reservation:detail', 'reservation:write'])]
     private ?string $allergyNote = null;
 
     #[ORM\Column(type: 'string', length: 16)]
+    #[Groups(['reservation:list', 'reservation:detail', 'reservation:write'])]
     private string $status;
 
     #[ORM\Column(type: 'datetime')]
+    #[Groups(['reservation:list', 'reservation:detail'])]
     private DateTimeInterface $createdAt;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[Groups(['reservation:detail'])]
     private ?DateTimeInterface $updatedAt = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'reservations')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['reservation:detail', 'reservation:write', 'user:read'])]
     private User $user;
 
     #[ORM\ManyToOne(targetEntity: Restaurant::class, inversedBy: 'reservations')]
     #[ORM\JoinColumn(nullable: true)]
+    #[Groups(['reservation:detail', 'reservation:write'])]
     private ?Restaurant $restaurant = null;
 
     public function getId(): ?int

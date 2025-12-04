@@ -9,9 +9,11 @@ use App\Repository\DishRepository;
 use App\Repository\RestaurantRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Serializer\SerializerInterface;
 
 #[Route('api/dish', name: 'api_dish_')]
 final class DishController extends AbstractController
@@ -20,10 +22,11 @@ final class DishController extends AbstractController
         private EntityManagerInterface $manager,
         private DishRepository $repository,
         private RestaurantRepository $restaurantRepository,
+        private SerializerInterface $serializer,
     ) {
     }
 
-    #[Route('/add', name: 'new', methods: ['POST', 'GET'])]
+    #[Route('/add', name: 'new', methods: ['POST'])]
     public function new(): Response
     {
         // Je crée un plat en dur tant que je n'ai pas branché la vraie requête
@@ -51,7 +54,7 @@ final class DishController extends AbstractController
     }
 
     #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\\d+'])]
-    public function show(int $id): Response
+    public function show(int $id): JsonResponse
     {
         // Je récupère le plat demandé
         $dish = $this->repository->find($id);
@@ -61,19 +64,12 @@ final class DishController extends AbstractController
             throw new NotFoundHttpException("Plat d'id {$id} introuvable");
         }
 
-        // Je renvoie les infos principales
-        return $this->json([
-            'id' => $dish->getId(),
-            'uuid' => $dish->getUuid(),
-            'title' => $dish->getTitle(),
-            'description' => $dish->getDescription(),
-            'price' => $dish->getPrice(),
-            'createdAt' => $dish->getCreatedAt()?->format(DATE_ATOM),
-            'restaurant' => $dish->getRestaurant()?->getName() ?? '',
-        ]);
+        // Je renvoie les infos principales via le Serializer pour rester cohérent
+        $payload = $this->serializer->serialize($dish, 'json', ['groups' => ['dish:detail']]);
+        return new JsonResponse($payload, Response::HTTP_OK, [], true);
     }
 
-    #[Route('/{id}_put', name: 'edit', methods: ['PUT', 'GET'], requirements: ['id' => '\\d+'])]
+    #[Route('/{id}', name: 'edit', methods: ['PUT'], requirements: ['id' => '\\d+'])]
     public function edit(int $id): Response
     {
         // Je charge l'entité à modifier
@@ -99,7 +95,7 @@ final class DishController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}_delete', name: 'delete', methods: ['DELETE', 'GET'], requirements: ['id' => '\\d+'])]
+    #[Route('/{id}', name: 'delete', methods: ['DELETE'], requirements: ['id' => '\\d+'])]
     public function delete(int $id): Response
     {
         // Je vérifie que le plat existe avant de supprimer

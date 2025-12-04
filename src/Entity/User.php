@@ -12,14 +12,15 @@ class User
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['restaurant.read', 'user.read'])]
+    #[Groups(['restaurant:detail', 'user:read', 'user:write', 'reservation:detail'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['restaurant.read', 'user.read'])]
+    #[Groups(['restaurant:detail', 'user:read', 'user:write', 'reservation:detail'])]
     private ?string $email = null;
 
     #[ORM\OneToOne(mappedBy: 'owner', targetEntity: Restaurant::class, cascade: ['persist', 'remove'])]
+    #[Groups(['restaurant:detail', 'user:read'])]
     private ?Restaurant $restaurant = null;
 
     public function getId(): ?int

@@ -9,9 +9,11 @@ use App\Repository\CategoryRepository;
 use App\Repository\RestaurantRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Serializer\SerializerInterface;
 
 #[Route('api/category', name: 'api_category_')]
 final class CategoryController extends AbstractController
@@ -20,10 +22,11 @@ final class CategoryController extends AbstractController
         private EntityManagerInterface $manager,
         private CategoryRepository $repository,
         private RestaurantRepository $restaurantRepository,
+        private SerializerInterface $serializer,
     ) {
     }
 
-    #[Route('/add', name: 'new', methods: ['POST', 'GET'])]
+    #[Route('/add', name: 'new', methods: ['POST'])]
     public function new(): Response
     {
         // Je crée une catégorie en dur tant que je n'ai pas branché la vraie requête
@@ -49,7 +52,7 @@ final class CategoryController extends AbstractController
     }
 
     #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\\d+'])]
-    public function show(int $id): Response
+    public function show(int $id): JsonResponse
     {
         // Je récupère la catégorie demandée
         $category = $this->repository->find($id);
@@ -59,17 +62,12 @@ final class CategoryController extends AbstractController
             throw new NotFoundHttpException("Catégorie d'id {$id} introuvable");
         }
 
-        // Je renvoie les infos principales
-        return $this->json([
-            'id' => $category->getId(),
-            'uuid' => $category->getUuid(),
-            'title' => $category->getTitle(),
-            'createdAt' => $category->getCreatedAt()?->format(DATE_ATOM),
-            'restaurant' => $category->getRestaurant()?->getName() ?? '',
-        ]);
+        // Je renvoie les infos principales via le Serializer pour rester cohérent
+        $payload = $this->serializer->serialize($category, 'json', ['groups' => ['category:detail']]);
+        return new JsonResponse($payload, Response::HTTP_OK, [], true);
     }
 
-    #[Route('/{id}_put', name: 'edit', methods: ['PUT', 'GET'], requirements: ['id' => '\\d+'])]
+    #[Route('/{id}', name: 'edit', methods: ['PUT'], requirements: ['id' => '\\d+'])]
     public function edit(int $id): Response
     {
         // Je charge l'entité à modifier
@@ -95,7 +93,7 @@ final class CategoryController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}_delete', name: 'delete', methods: ['DELETE', 'GET'], requirements: ['id' => '\\d+'])]
+    #[Route('/{id}', name: 'delete', methods: ['DELETE'], requirements: ['id' => '\\d+'])]
     public function delete(int $id): Response
     {
         // Je vérifie que la catégorie existe avant de supprimer

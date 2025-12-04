@@ -30,10 +30,23 @@ final class RestaurantController extends AbstractController
     }
 
 
+    #[Route('/', name: 'index', methods: ['GET'])]
+    public function index(): JsonResponse
+    {
+        $restaurants = $this->repository->findAll();
+        $data = $this->serializer->serialize($restaurants, 'json', ['groups' => ['restaurant:list']]);
+        return new JsonResponse($data, Response::HTTP_OK, [], true);
+    }
+
     #[Route('/add', name: 'new', methods: ['POST'])]
     public function new(Request $request): JsonResponse
     {
-        $restaurant = $this->serializer->deserialize($request->getcontent(), Restaurant::class, 'json', ['groups' => ['restaurant.write']]);
+        $restaurant = $this->serializer->deserialize(
+            $request->getContent(),
+            Restaurant::class,
+            'json',
+            ['groups' => ['restaurant:write']]
+        );
         $restaurant->setCreatedAt(new \DateTime());
         $restaurant->setOwner($this->userRepository->find(3)); //TODO remplacer par user connecté
 
@@ -58,8 +71,8 @@ final class RestaurantController extends AbstractController
 
         // Si je trouve, je renvoie une 200 claire
         if ($restaurant) {
-            $responsedata = $this->serializer->serialize($restaurant, 'json', ['groups' => ['restaurant.read'],]);
-            return new JsonResponse($responsedata, Response::HTTP_OK,[], true);
+            $responsedata = $this->serializer->serialize($restaurant, 'json', ['groups' => ['restaurant:detail']]);
+            return new JsonResponse($responsedata, Response::HTTP_OK, [], true);
         }
         return new JsonResponse(['message' => 'Restaurant introuvable'], Response::HTTP_NOT_FOUND);
     }
@@ -79,7 +92,7 @@ final class RestaurantController extends AbstractController
             $request->getContent(),
             Restaurant::class,
             'json',
-            ['groups' => ['restaurant.write'], 'object_to_populate' => $restaurant]
+            ['groups' => ['restaurant:write'], 'object_to_populate' => $restaurant]
         );
 
         $this->manager->persist($restaurant);

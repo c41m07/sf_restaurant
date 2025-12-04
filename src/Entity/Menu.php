@@ -7,6 +7,7 @@ use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: MenuRepository::class)]
 class Menu
@@ -14,31 +15,40 @@ class Menu
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['menu:list', 'menu:detail'])]
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 36, unique: true)]
+    #[Groups(['menu:list', 'menu:detail', 'menu:write'])]
     private string $uuid;
 
     #[ORM\Column(type: 'string', length: 32)]
+    #[Groups(['menu:list', 'menu:detail', 'menu:write'])]
     private string $title;
 
     #[ORM\Column(type: 'text')]
+    #[Groups(['menu:detail', 'menu:write'])]
     private string $description;
 
     #[ORM\Column(type: 'decimal', precision: 6, scale: 2)]
+    #[Groups(['menu:list', 'menu:detail', 'menu:write'])]
     private string $price;
 
     #[ORM\Column(type: 'datetime')]
+    #[Groups(['menu:list', 'menu:detail'])]
     private DateTimeInterface $createdAt;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[Groups(['menu:detail'])]
     private ?DateTimeInterface $updatedAt = null;
 
     #[ORM\ManyToOne(targetEntity: Restaurant::class, inversedBy: 'menus')]
     #[ORM\JoinColumn(nullable: true)]
+    #[Groups(['menu:detail', 'menu:write'])]
     private ?Restaurant $restaurant = null;
 
     #[ORM\OneToMany(targetEntity: MenuDish::class, mappedBy: 'menu', cascade: ['persist', 'remove'])]
+    #[Groups(['menu:detail'])]
     private Collection $menuDishes;
 
     public function __construct()
