@@ -33,6 +33,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var string The hashed password
      */
     #[ORM\Column]
+    #[Groups(['user:write'])]
     private ?string $password = null;
 
     #[ORM\Column]
@@ -51,7 +52,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**@throws \Exception */
     public function __construct()
     {
-        $this->apiToken = bin2hex(random_bytes(16));
+        $this->apiToken = bin2hex(random_bytes(20));
     }
 
     public function getId(): ?int
