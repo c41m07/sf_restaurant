@@ -9,6 +9,7 @@ use Doctrine\Persistence\ManagerRegistry;
 /**
  * @extends ServiceEntityRepository<DishCategory>
  */
+// Je fournis les accès spécifiques à la jointure plat/catégorie.
 class DishCategoryRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)

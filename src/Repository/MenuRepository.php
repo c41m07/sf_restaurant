@@ -9,6 +9,7 @@ use Doctrine\Persistence\ManagerRegistry;
 /**
  * @extends ServiceEntityRepository<Menu>
  */
+// Je regroupe ici les requêtes spécifiques aux menus.
 class MenuRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)

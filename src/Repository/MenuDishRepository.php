@@ -9,6 +9,7 @@ use Doctrine\Persistence\ManagerRegistry;
 /**
  * @extends ServiceEntityRepository<MenuDish>
  */
+// Je propose ici des helpers pour naviguer dans la jointure Menu/Plat.
 class MenuDishRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)

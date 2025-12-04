@@ -9,6 +9,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 
+// Je représente ici la table des catégories, chaque objet correspond à une catégorie de menu.
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
 class Category
 {
@@ -18,6 +19,7 @@ class Category
     #[Groups(['category:list', 'category:detail', 'dish:detail'])]
     private ?int $id = null;
 
+    // Je stocke un identifiant fonctionnel (UUID) pour faciliter les échanges avec le front.
     #[ORM\Column(type: 'string', length: 36, unique: true)]
     #[Groups(['category:list', 'category:detail', 'category:write', 'dish:detail'])]
     private string $uuid;
@@ -116,6 +118,7 @@ class Category
     /** @return Collection<int, DishCategory> */
     public function getDishCategories(): Collection
     {
+        // Je retourne ici la collection de jointures vers les plats liés à cette catégorie.
         return $this->dishCategories;
     }
 

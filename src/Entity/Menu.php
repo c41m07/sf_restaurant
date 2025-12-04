@@ -9,6 +9,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 
+// Je modélise un menu (ensemble de plats) proposé par le restaurant.
 #[ORM\Entity(repositoryClass: MenuRepository::class)]
 class Menu
 {
@@ -148,6 +149,7 @@ class Menu
     /** @return Collection<int, MenuDish> */
     public function getMenuDishes(): Collection
     {
+        // Je fournis les associations menu/plat pour construire les cartes côté front.
         return $this->menuDishes;
     }
 

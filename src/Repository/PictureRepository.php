@@ -9,6 +9,7 @@ use Doctrine\Persistence\ManagerRegistry;
 /**
  * @extends ServiceEntityRepository<Picture>
  */
+// Je centralise les accès aux photos (galerie, visuels d’ambiance).
 class PictureRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)

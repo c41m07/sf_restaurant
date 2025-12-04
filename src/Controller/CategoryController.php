@@ -1,7 +1,5 @@
 <?php
 
-//! TODO: enlever les méthodes GET sur POST/PUT/DELETE pour avoir des routes propres
-
 namespace App\Controller;
 
 use App\Entity\Category;
@@ -15,9 +13,11 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
+// Je gère ici toutes les opérations CRUD exposées aux clients pour la ressource Category.
 #[Route('api/category', name: 'api_category_')]
 final class CategoryController extends AbstractController
 {
+    // Je regroupe les services nécessaires dans le constructeur pour simplifier l’injection.
     public function __construct(
         private EntityManagerInterface $manager,
         private CategoryRepository     $repository,

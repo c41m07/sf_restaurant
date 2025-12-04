@@ -6,6 +6,7 @@ use App\Repository\DishCategoryRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 
+// Je représente la table de jointure entre les plats et leurs catégories.
 #[ORM\Entity(repositoryClass: DishCategoryRepository::class)]
 class DishCategory
 {

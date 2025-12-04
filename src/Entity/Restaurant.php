@@ -185,6 +185,7 @@ class Restaurant
     /** @return Collection<int, Picture> */
     public function getPictures(): Collection
     {
+        // Je retourne toutes les images associées à l’établissement (galerie, bannières).
         return $this->pictures;
     }
 

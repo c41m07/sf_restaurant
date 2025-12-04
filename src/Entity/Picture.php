@@ -7,6 +7,7 @@ use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 
+// Je représente une image associée au restaurant (galerie, carte, etc.).
 #[ORM\Entity(repositoryClass: PictureRepository::class)]
 class Picture
 {

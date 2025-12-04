@@ -9,6 +9,7 @@ use Doctrine\Persistence\ManagerRegistry;
 /**
  * @extends ServiceEntityRepository<Dish>
  */
+// Je rassemble les requêtes personnalisées liées aux plats.
 class DishRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)

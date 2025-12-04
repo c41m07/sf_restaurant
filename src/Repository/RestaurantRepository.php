@@ -9,6 +9,7 @@ use Doctrine\Persistence\ManagerRegistry;
 /**
  * @extends ServiceEntityRepository<Restaurant>
  */
+// Je propose ici les requêtes spécialisées pour l’entité Restaurant (ex : filtrage par propriétaire).
 class RestaurantRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)

@@ -75,5 +75,6 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="Quaiantique_PFR" />
   </component>
 </module>

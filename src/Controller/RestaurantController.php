@@ -34,22 +34,32 @@ final class RestaurantController extends AbstractController
     #[Route('/', name: 'index', methods: ['GET'])]
     public function index(): JsonResponse
     {
+        // Je récupère tous les restaurants via le repository
         $restaurants = $this->repository->findAll();
+
+        // Je sers les données en JSON en utilisant le serializer
         $data = $this->serializer->serialize($restaurants, 'json', ['groups' => ['restaurant:list']]);
+
+        // Je renvoie la réponse JSON avec un code HTTP 200
         return new JsonResponse($data, Response::HTTP_OK, [], true);
     }
 
     #[Route('/add', name: 'new', methods: ['POST'])]
     public function new(Request $request): JsonResponse
     {
+        // Je désérialise le contenu de la requête pour créer un nouvel objet Restaurant
         $restaurant = $this->serializer->deserialize(
             $request->getContent(),
             Restaurant::class,
             'json',
             ['groups' => ['restaurant:write']]
         );
+
+        // Je définis la date de création à maintenant
         $restaurant->setCreatedAt(new \DateTime());
-        $restaurant->setOwner($this->userRepository->find(1)); //TODO remplacer par user connecté
+
+        // TODO : Remplacer par l'utilisateur connecté si admin
+        $restaurant->setOwner($this->userRepository->find(1));
 
         // J'ajoute l'entité dans le suivi Doctrine
         $this->manager->persist($restaurant);
@@ -75,6 +85,8 @@ final class RestaurantController extends AbstractController
             $responsedata = $this->serializer->serialize($restaurant, 'json', ['groups' => ['restaurant:detail']]);
             return new JsonResponse($responsedata, Response::HTTP_OK, [], true);
         }
+
+        // Sinon, je renvoie une erreur 404
         return new JsonResponse(['message' => 'Restaurant introuvable'], Response::HTTP_NOT_FOUND);
     }
 
@@ -89,6 +101,7 @@ final class RestaurantController extends AbstractController
             throw new NotFoundHttpException("Restaurant d'id {$id} introuvable");
         }
 
+        // Je désérialise le contenu de la requête pour mettre à jour l'objet Restaurant
         $this->serializer->deserialize(
             $request->getContent(),
             Restaurant::class,
@@ -96,13 +109,11 @@ final class RestaurantController extends AbstractController
             ['groups' => ['restaurant:write'], 'object_to_populate' => $restaurant]
         );
 
-        $this->manager->persist($restaurant);
         // Doctrine suit déjà l'objet donc un flush suffit
         $this->manager->flush();
 
         // Je renvoie un message pour confirmer
         return $this->json(['message' => 'Restaurant d\'id ' . $id . ' modifié avec succès']);
-
     }
 
     #[Route('/{id}', name: 'delete', methods: ['DELETE'], requirements: ['id' => '\\d+'])]
@@ -123,5 +134,4 @@ final class RestaurantController extends AbstractController
         // Je renvoie une confirmation simple
         return $this->json(['message' => 'Restaurant d\'id ' . $id . ' supprimé avec succès']);
     }
-
 }

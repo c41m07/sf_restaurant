@@ -1,7 +1,5 @@
 <?php
 
-//! TODO: enlever les méthodes GET sur POST/PUT/DELETE pour avoir des routes propres
-
 namespace App\Controller;
 
 use App\Entity\Dish;
@@ -15,9 +13,11 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
+// Je gère ici les opérations CRUD exposées pour les plats (Dish).
 #[Route('api/dish', name: 'api_dish_')]
 final class DishController extends AbstractController
 {
+    // Je centralise les services nécessaires (Doctrine + Serializer) pour rester lisible et testable.
     public function __construct(
         private EntityManagerInterface $manager,
         private DishRepository         $repository,

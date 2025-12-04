@@ -15,7 +15,7 @@ class Dish
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['dish:list', 'dish:detail'])]
+    #[Groups(['dish:detail', 'dish:list', 'category:detail'])]
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 36, unique: true)]
@@ -148,6 +148,7 @@ class Dish
     /** @return Collection<int, DishCategory> */
     public function getDishCategories(): Collection
     {
+        // Je mets à disposition la liste des associations plat/catégorie.
         return $this->dishCategories;
     }
 

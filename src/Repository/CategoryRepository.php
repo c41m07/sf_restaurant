@@ -8,6 +8,7 @@ use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * @extends ServiceEntityRepository<Category>
+ * Je fournis ici quelques helpers Doctrine spécifiques pour l’entité Category.
  */
 class CategoryRepository extends ServiceEntityRepository
 {

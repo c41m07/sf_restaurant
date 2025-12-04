@@ -26,7 +26,7 @@ class MenuDish
         return $this->menu;
     }
 
-    public function setMenu($menu): self
+    public function setMenu(?Menu $menu): self
     {
         $this->menu = $menu;
 
@@ -38,7 +38,7 @@ class MenuDish
         return $this->dish;
     }
 
-    public function setDish($dish): self
+    public function setDish(?Dish $dish): self
     {
         $this->dish = $dish;
 
