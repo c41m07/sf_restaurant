@@ -33,9 +33,9 @@ final class RestaurantController extends AbstractController
     #[Route('/add', name: 'new', methods: ['POST'])]
     public function new(Request $request): JsonResponse
     {
-        $restaurant = $this->serializer->deserialize($request->getcontent(), Restaurant::class, 'json');
+        $restaurant = $this->serializer->deserialize($request->getcontent(), Restaurant::class, 'json', ['groups' => ['restaurant.write']]);
         $restaurant->setCreatedAt(new \DateTime());
-        $restaurant->setOwner($this->userRepository->find(2)); //TODO remplacer par user connecté
+        $restaurant->setOwner($this->userRepository->find(3)); //TODO remplacer par user connecté
 
         // J'ajoute l'entité dans le suivi Doctrine
         $this->manager->persist($restaurant);
@@ -58,14 +58,14 @@ final class RestaurantController extends AbstractController
 
         // Si je trouve, je renvoie une 200 claire
         if ($restaurant) {
-            $responsedata = $this->serializer->serialize($restaurant, 'json');
+            $responsedata = $this->serializer->serialize($restaurant, 'json', ['groups' => ['restaurant.read'],]);
             return new JsonResponse($responsedata, Response::HTTP_OK,[], true);
         }
         return new JsonResponse(['message' => 'Restaurant introuvable'], Response::HTTP_NOT_FOUND);
     }
 
-    #[Route('/{id}_put', name: 'edit', methods: ['PUT'], requirements: ['id' => '\\d+'])]
-    public function edit(int $id): JsonResponse
+    #[Route('/{id}', name: 'edit', methods: ['PUT'], requirements: ['id' => '\\d+'])]
+    public function edit(int $id, Request $request): JsonResponse
     {
         // Je charge l'entité à modifier
         $restaurant = $this->repository->find($id);
@@ -75,21 +75,23 @@ final class RestaurantController extends AbstractController
             throw new NotFoundHttpException("Restaurant d'id {$id} introuvable");
         }
 
-        // Exemple simple : je change juste le nom
-        $restaurant->setName('Nouveau nom du restaurant');
+        $this->serializer->deserialize(
+            $request->getContent(),
+            Restaurant::class,
+            'json',
+            ['groups' => ['restaurant.write'], 'object_to_populate' => $restaurant]
+        );
 
+        $this->manager->persist($restaurant);
         // Doctrine suit déjà l'objet donc un flush suffit
         $this->manager->flush();
 
         // Je renvoie un message pour confirmer
-        return $this->json([
-            'message' => 'Restaurant mis à jour',
-            'id' => $restaurant->getId(),
-            'name' => $restaurant->getName(),
-        ]);
+        return $this->json(['message' => 'Restaurant d\'id ' . $id . ' modifié avec succès']);
+
     }
 
-    #[Route('/{id}_delete', name: 'delete', methods: ['DELETE'], requirements: ['id' => '\\d+'])]
+    #[Route('/{id}', name: 'delete', methods: ['DELETE'], requirements: ['id' => '\\d+'])]
     public function delete(int $id): JsonResponse
     {
         // Je vérifie que le restaurant existe avant de supprimer
