@@ -8,6 +8,7 @@ use App\Repository\RestaurantRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
@@ -27,25 +28,35 @@ final class CategoryController extends AbstractController
     {
     }
 
-    #[Route('/add', name: 'new', methods: ['POST'])]
-    public function new(): Response
+    #[Route('/', name: 'index', methods: ['GET'])]
+    public function index(): JsonResponse
     {
-        // Je crée une catégorie en dur tant que je n'ai pas branché la vraie requête
-        $category = new Category();
+        // Je récupère toutes les catégories puis les sérialise avec le groupe list
+        $categories = $this->repository->findAll();
+        $payload = $this->serializer->serialize($categories, 'json', ['groups' => ['category:list']]);
 
-        // Valeurs de test pour vérifier que l'enregistrement se passe bien
-        $category->setUuid('uuid-category-1');
-        $category->setTitle('Catégorie phare du restaurant');
+        return new JsonResponse($payload, Response::HTTP_OK, [], true);
+    }
+
+    #[Route('/add', name: 'new', methods: ['POST'])]
+    public function new(Request $request): JsonResponse
+    {
+        // Je désérialise le JSON entrant pour créer une nouvelle catégorie
+        $category = $this->serializer->deserialize(
+            $request->getContent(),
+            Category::class,
+            'json',
+            ['groups' => ['category:write']]
+        );
+
+        $category->setUuid('TODO_UUID_A_INTEGRER_' . $category->getTitle());
+        $category->setRestaurant($this->restaurantRepository->find($this->getUser()->getRestaurant()->getId()));
         $category->setCreatedAt(new \DateTime());
-        $category->setRestaurant($this->restaurantRepository->find(1));
+        $this->applyRestaurantRelation($category, $request);
 
-        // J'ajoute l'entité dans le suivi Doctrine
         $this->manager->persist($category);
-
-        // Je sauvegarde tout de suite pour rester simple
         $this->manager->flush();
 
-        // Je confirme la création au client
         return $this->json(
             ['message' => "catégorie créée avec succès {$category->getId()} id"],
             status: Response::HTTP_CREATED,
@@ -69,7 +80,7 @@ final class CategoryController extends AbstractController
     }
 
     #[Route('/{id}', name: 'edit', methods: ['PUT'], requirements: ['id' => '\\d+'])]
-    public function edit(int $id): Response
+    public function edit(int $id, Request $request): JsonResponse
     {
         // Je charge l'entité à modifier
         $category = $this->repository->find($id);
@@ -79,14 +90,18 @@ final class CategoryController extends AbstractController
             throw new NotFoundHttpException("Catégorie d'id {$id} introuvable");
         }
 
-        // Exemple simple : je change juste le titre
-        $category->setTitle('Nouveau titre de catégorie');
-        $category->setUpdatedAt(new \DateTime());
+        // Je désérialise la requête pour mettre à jour l'entité existante
+        $this->serializer->deserialize(
+            $request->getContent(),
+            Category::class,
+            'json',
+            ['groups' => ['category:write'], 'object_to_populate' => $category]
+        );
 
-        // Doctrine suit déjà l'objet donc un flush suffit
+        $category->setUpdatedAt(new \DateTime());
+        $this->applyRestaurantRelation($category, $request);
         $this->manager->flush();
 
-        // Je renvoie un message pour confirmer
         return $this->json([
             'message' => 'Catégorie mise à jour',
             'id' => $category->getId(),
@@ -95,7 +110,7 @@ final class CategoryController extends AbstractController
     }
 
     #[Route('/{id}', name: 'delete', methods: ['DELETE'], requirements: ['id' => '\\d+'])]
-    public function delete(int $id): Response
+    public function delete(int $id): JsonResponse
     {
         // Je vérifie que la catégorie existe avant de supprimer
         $category = $this->repository->find($id);
@@ -111,5 +126,30 @@ final class CategoryController extends AbstractController
 
         // Je renvoie une confirmation simple
         return $this->json(['message' => "Catégorie d'id {$id} supprimée avec succès"]);
+    }
+
+    private function applyRestaurantRelation(Category $category, Request $request): void
+    {
+        // Je récupère l'identifiant restaurant éventuel pour lier la catégorie
+        $payload = $this->decodePayload($request);
+        $restaurantId = $payload['restaurant_id'] ?? $payload['restaurant']['id'] ?? null;
+
+        if ($restaurantId === null) {
+            return;
+        }
+
+        $restaurant = $this->restaurantRepository->find($restaurantId);
+        if (!$restaurant) {
+            throw new NotFoundHttpException("Restaurant d'id {$restaurantId} introuvable pour la catégorie");
+        }
+
+        $category->setRestaurant($restaurant);
+    }
+
+    private function decodePayload(Request $request): array
+    {
+        $payload = json_decode($request->getContent(), true);
+
+        return is_array($payload) ? $payload : [];
     }
 }

@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Serializer\SerializerInterface;
 
 #[Route('api/security', name: 'api_api_')]
@@ -34,6 +35,7 @@ final class SecurityController extends AbstractController
         );
 
         // Je sécurise immédiatement le mot de passe et j'enregistre les métadonnées.
+        $user->setUuid('TODO_UUID_A_INTEGRER_'.$user->getEmail());
         $user->setPassword($passwordHasher->hashPassword($user, $user->getPassword()));
         $user->setCreatedAt(new \DateTimeImmutable());
 
@@ -47,5 +49,20 @@ final class SecurityController extends AbstractController
             'apiToken' => $user->getApiToken(),
             'role' => $user->getRoles(),
         ], Response::HTTP_CREATED);
+    }
+
+    #[Route('/login', name: 'login', methods: ['POST'])]
+    public function login(#[CurrentUser] ?User $user): JsonResponse
+    {
+
+        if (null === $user) {
+            return $this->json(['message' => 'User not found'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        return new JsonResponse([
+            'user' => $user->getUserIdentifier(),
+            'apiToken' => $user->getApiToken(),
+            'role' => $user->getRoles(),
+        ], Response::HTTP_OK);
     }
 }

@@ -55,11 +55,12 @@ final class RestaurantController extends AbstractController
             ['groups' => ['restaurant:write']]
         );
 
+        $restaurant->setUuid('TODO_UUID_A_INTEGRER_'.$restaurant->getName());;
         // Je définis la date de création à maintenant
         $restaurant->setCreatedAt(new \DateTime());
 
         // TODO : Remplacer par l'utilisateur connecté si admin
-        $restaurant->setOwner($this->userRepository->find(1));
+        $restaurant->setOwner($this->userRepository->find($this->getUser()->getId()));
 
         // J'ajoute l'entité dans le suivi Doctrine
         $this->manager->persist($restaurant);
@@ -108,7 +109,7 @@ final class RestaurantController extends AbstractController
             'json',
             ['groups' => ['restaurant:write'], 'object_to_populate' => $restaurant]
         );
-
+        $restaurant->setUpdatedAt(new \DateTime());
         // Doctrine suit déjà l'objet donc un flush suffit
         $this->manager->flush();
 

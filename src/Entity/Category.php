@@ -37,7 +37,6 @@ class Category
     private ?DateTimeInterface $updatedAt = null;
 
     #[ORM\ManyToOne(targetEntity: Restaurant::class, inversedBy: 'categories')]
-    #[ORM\JoinColumn(nullable: true)]
     #[Groups(['category:detail', 'category:write'])]
     private ?Restaurant $restaurant = null;
 
