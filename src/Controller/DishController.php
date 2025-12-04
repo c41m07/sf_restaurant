@@ -20,10 +20,11 @@ final class DishController extends AbstractController
 {
     public function __construct(
         private EntityManagerInterface $manager,
-        private DishRepository $repository,
-        private RestaurantRepository $restaurantRepository,
-        private SerializerInterface $serializer,
-    ) {
+        private DishRepository         $repository,
+        private RestaurantRepository   $restaurantRepository,
+        private SerializerInterface    $serializer,
+    )
+    {
     }
 
     #[Route('/add', name: 'new', methods: ['POST'])]

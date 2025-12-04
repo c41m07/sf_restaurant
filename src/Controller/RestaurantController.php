@@ -22,11 +22,12 @@ final class RestaurantController extends AbstractController
 {
     public function __construct(
         private EntityManagerInterface $manager,
-        private RestaurantRepository $repository,
-        private UserRepository $userRepository,
-        private SerializerInterface $serializer,
-        private UrlGeneratorInterface $urlGenerator,
-    ) {
+        private RestaurantRepository   $repository,
+        private UserRepository         $userRepository,
+        private SerializerInterface    $serializer,
+        private UrlGeneratorInterface  $urlGenerator,
+    )
+    {
     }
 
 
@@ -48,7 +49,7 @@ final class RestaurantController extends AbstractController
             ['groups' => ['restaurant:write']]
         );
         $restaurant->setCreatedAt(new \DateTime());
-        $restaurant->setOwner($this->userRepository->find(3)); //TODO remplacer par user connecté
+        $restaurant->setOwner($this->userRepository->find(1)); //TODO remplacer par user connecté
 
         // J'ajoute l'entité dans le suivi Doctrine
         $this->manager->persist($restaurant);

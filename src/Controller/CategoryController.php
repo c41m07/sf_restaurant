@@ -20,10 +20,11 @@ final class CategoryController extends AbstractController
 {
     public function __construct(
         private EntityManagerInterface $manager,
-        private CategoryRepository $repository,
-        private RestaurantRepository $restaurantRepository,
-        private SerializerInterface $serializer,
-    ) {
+        private CategoryRepository     $repository,
+        private RestaurantRepository   $restaurantRepository,
+        private SerializerInterface    $serializer,
+    )
+    {
     }
 
     #[Route('/add', name: 'new', methods: ['POST'])]
