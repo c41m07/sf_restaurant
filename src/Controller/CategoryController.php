@@ -6,6 +6,9 @@ use App\Entity\Category;
 use App\Repository\CategoryRepository;
 use App\Repository\RestaurantRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Nelmio\ApiDocBundle\Attribute\Model;
+use Nelmio\ApiDocBundle\Attribute\Security;
+use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -29,6 +32,21 @@ final class CategoryController extends AbstractController
     }
 
     #[Route('/', name: 'index', methods: ['GET'])]
+    #[OA\Get(
+        summary: "Lister toutes les catégories",
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Liste des catégories',
+                content: new OA\JsonContent(
+                    type: 'array',
+                    items: new OA\Items(ref: new Model(type: Category::class, groups: ['category:list']))
+                )
+            )
+        ]
+    )]
+    #[OA\Tag(name: 'category')]
+    #[Security(name: 'Bearer')]
     public function index(): JsonResponse
     {
         // Je récupère toutes les catégories puis les sérialise avec le groupe list
@@ -39,6 +57,30 @@ final class CategoryController extends AbstractController
     }
 
     #[Route('/add', name: 'new', methods: ['POST'])]
+    #[OA\Post(
+        summary: 'Créer une catégorie',
+        requestBody: new OA\RequestBody(
+            description: 'Payload de création',
+            required: true,
+            content: new OA\JsonContent(ref: new Model(type: Category::class, groups: ['category:write']))
+        ),
+        responses: [
+            new OA\Response(
+                response: 201,
+                description: 'Catégorie créée',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'message', type: 'string', example: 'catégorie créée avec succès 1 id')
+                    ],
+                    type: 'object'
+                )
+            ),
+            new OA\Response(response: 400, description: 'Requête invalide'),
+            new OA\Response(response: 401, description: 'Authentification requise')
+        ]
+    )]
+    #[OA\Tag(name: 'category')]
+    #[Security(name: 'Bearer')]
     public function new(Request $request): JsonResponse
     {
         // Je désérialise le JSON entrant pour créer une nouvelle catégorie
@@ -64,6 +106,34 @@ final class CategoryController extends AbstractController
     }
 
     #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\\d+'])]
+    #[OA\Get(
+        summary: 'Afficher une catégorie',
+        parameters: [
+            new OA\Parameter(
+                name: 'id',
+                description: 'Identifiant de la catégorie',
+                in: 'path',
+                required: true,
+                schema: new OA\Schema(type: 'integer')
+            )
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Catégorie trouvée',
+                content: new OA\JsonContent(ref: new Model(type: Category::class, groups: ['category:detail']))
+            ),
+            new OA\Response(
+                response: 404,
+                description: 'Catégorie introuvable',
+                content: new OA\JsonContent(
+                    properties: [new OA\Property(property: 'message', type: 'string')],
+                    type: 'object'
+                )
+            )
+        ]
+    )]
+    #[OA\Tag(name: 'category')]
     public function show(int $id): JsonResponse
     {
         // Je récupère la catégorie demandée
@@ -80,6 +150,41 @@ final class CategoryController extends AbstractController
     }
 
     #[Route('/{id}', name: 'edit', methods: ['PUT'], requirements: ['id' => '\\d+'])]
+    #[OA\Put(
+        summary: 'Mettre à jour une catégorie',
+        parameters: [
+            new OA\Parameter(
+                name: 'id',
+                description: 'Identifiant de la catégorie',
+                in: 'path',
+                required: true,
+                schema: new OA\Schema(type: 'integer')
+            )
+        ],
+        requestBody: new OA\RequestBody(
+            description: 'Payload de mise à jour',
+            required: true,
+            content: new OA\JsonContent(ref: new Model(type: Category::class, groups: ['category:write']))
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Catégorie mise à jour',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'message', type: 'string', example: 'Catégorie mise à jour'),
+                        new OA\Property(property: 'id', type: 'integer'),
+                        new OA\Property(property: 'title', type: 'string')
+                    ],
+                    type: 'object'
+                )
+            ),
+            new OA\Response(response: 401, description: 'Authentification requise'),
+            new OA\Response(response: 404, description: 'Catégorie introuvable')
+        ]
+    )]
+    #[OA\Tag(name: 'category')]
+    #[Security(name: 'Bearer')]
     public function edit(int $id, Request $request): JsonResponse
     {
         // Je charge l'entité à modifier
@@ -110,6 +215,28 @@ final class CategoryController extends AbstractController
     }
 
     #[Route('/{id}', name: 'delete', methods: ['DELETE'], requirements: ['id' => '\\d+'])]
+    #[OA\Delete(
+        summary: 'Supprimer une catégorie',
+        parameters: [
+            new OA\Parameter(
+                name: 'id',
+                description: 'Identifiant de la catégorie',
+                in: 'path',
+                required: true,
+                schema: new OA\Schema(type: 'integer')
+            )
+        ],
+        responses: [
+            new OA\Response(
+                response: 204,
+                description: 'Catégorie supprimée'
+            ),
+            new OA\Response(response: 401, description: 'Authentification requise'),
+            new OA\Response(response: 404, description: 'Catégorie introuvable')
+        ]
+    )]
+    #[OA\Tag(name: 'category')]
+    #[Security(name: 'Bearer')]
     public function delete(int $id): JsonResponse
     {
         // Je vérifie que la catégorie existe avant de supprimer
@@ -125,7 +252,7 @@ final class CategoryController extends AbstractController
         $this->manager->flush();
 
         // Je renvoie une confirmation simple
-        return $this->json(['message' => "Catégorie d'id {$id} supprimée avec succès"]);
+        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
 
     private function applyRestaurantRelation(Category $category, Request $request): void

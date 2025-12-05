@@ -6,6 +6,9 @@ use App\Entity\Dish;
 use App\Repository\DishRepository;
 use App\Repository\RestaurantRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Nelmio\ApiDocBundle\Attribute\Model;
+use Nelmio\ApiDocBundle\Attribute\Security;
+use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -29,6 +32,21 @@ final class DishController extends AbstractController
     }
 
     #[Route('/', name: 'index', methods: ['GET'])]
+    #[OA\Get(
+        summary: 'Lister les plats',
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Liste des plats',
+                content: new OA\JsonContent(
+                    type: 'array',
+                    items: new OA\Items(ref: new Model(type: Dish::class, groups: ['dish:list']))
+                )
+            )
+        ]
+    )]
+    #[OA\Tag(name: 'dish')]
+    #[Security(name: 'Bearer')]
     public function index(): JsonResponse
     {
         $dishes = $this->repository->findAll();
@@ -38,6 +56,28 @@ final class DishController extends AbstractController
     }
 
     #[Route('/add', name: 'new', methods: ['POST'])]
+    #[OA\Post(
+        summary: 'Créer un plat',
+        requestBody: new OA\RequestBody(
+            description: 'Payload de création du plat',
+            required: true,
+            content: new OA\JsonContent(ref: new Model(type: Dish::class, groups: ['dish:write']))
+        ),
+        responses: [
+            new OA\Response(
+                response: 201,
+                description: 'Plat créé',
+                content: new OA\JsonContent(
+                    properties: [new OA\Property(property: 'message', type: 'string', example: 'plat créé avec succès 1 id')],
+                    type: 'object'
+                )
+            ),
+            new OA\Response(response: 400, description: 'Requête invalide'),
+            new OA\Response(response: 401, description: 'Authentification requise')
+        ]
+    )]
+    #[OA\Tag(name: 'dish')]
+    #[Security(name: 'Bearer')]
     public function new(Request $request): JsonResponse
     {
         $dish = $this->serializer->deserialize(
@@ -62,6 +102,21 @@ final class DishController extends AbstractController
     }
 
     #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\\d+'])]
+    #[OA\Get(
+        summary: 'Afficher un plat',
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Plat trouvé',
+                content: new OA\JsonContent(ref: new Model(type: Dish::class, groups: ['dish:detail']))
+            ),
+            new OA\Response(response: 404, description: 'Plat introuvable')
+        ]
+    )]
+    #[OA\Tag(name: 'dish')]
     public function show(int $id): JsonResponse
     {
         // Je récupère le plat demandé
@@ -78,6 +133,35 @@ final class DishController extends AbstractController
     }
 
     #[Route('/{id}', name: 'edit', methods: ['PUT'], requirements: ['id' => '\\d+'])]
+    #[OA\Put(
+        summary: 'Mettre à jour un plat',
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))
+        ],
+        requestBody: new OA\RequestBody(
+            description: 'Payload de mise à jour du plat',
+            required: true,
+            content: new OA\JsonContent(ref: new Model(type: Dish::class, groups: ['dish:write']))
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Plat mis à jour',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'message', type: 'string'),
+                        new OA\Property(property: 'id', type: 'integer'),
+                        new OA\Property(property: 'title', type: 'string')
+                    ],
+                    type: 'object'
+                )
+            ),
+            new OA\Response(response: 401, description: 'Authentification requise'),
+            new OA\Response(response: 404, description: 'Plat introuvable')
+        ]
+    )]
+    #[OA\Tag(name: 'dish')]
+    #[Security(name: 'Bearer')]
     public function edit(int $id, Request $request): JsonResponse
     {
         $dish = $this->repository->find($id);
@@ -106,6 +190,17 @@ final class DishController extends AbstractController
     }
 
     #[Route('/{id}', name: 'delete', methods: ['DELETE'], requirements: ['id' => '\\d+'])]
+    #[OA\Delete(
+        summary: 'Supprimer un plat',
+        parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
+        responses: [
+            new OA\Response(response: 204, description: 'Plat supprimé'),
+            new OA\Response(response: 401, description: 'Authentification requise'),
+            new OA\Response(response: 404, description: 'Plat introuvable')
+        ]
+    )]
+    #[OA\Tag(name: 'dish')]
+    #[Security(name: 'Bearer')]
     public function delete(int $id): JsonResponse
     {
         $dish = $this->repository->find($id);
@@ -117,7 +212,7 @@ final class DishController extends AbstractController
         $this->manager->remove($dish);
         $this->manager->flush();
 
-        return $this->json(['message' => "Plat d'id {$id} supprimé avec succès"]);
+        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
 
     private function applyRestaurantRelation(Dish $dish, Request $request): void

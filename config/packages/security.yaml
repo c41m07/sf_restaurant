@@ -19,7 +19,9 @@ security:
       provider: app_user_provider
       json_login:
         # api_login is a route we will create below
-        check_path: api_api_login
+        check_path: api_security_login
+        username_path: user
+        password_path: password
       custom_authenticator: App\Security\ApiTokenAuthenticator
 
       # activate different ways to authenticate
@@ -34,6 +36,7 @@ security:
   # - { path: ^/admin, roles: ROLE_ADMIN }
   # - { path: ^/profile, roles: ROLE_USER }
     - { path: ^/api/security/register, roles: PUBLIC_ACCESS }
+    - { path: ^/api/doc, roles: PUBLIC_ACCESS }
     - { path: ^/api/security/login, roles: PUBLIC_ACCESS }
     - { path: ^/api, roles: ROLE_USER }
 

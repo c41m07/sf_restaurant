@@ -7,6 +7,9 @@ use App\Entity\Restaurant;
 use App\Repository\RestaurantRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Nelmio\ApiDocBundle\Attribute\Model;
+use Nelmio\ApiDocBundle\Attribute\Security;
+use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -32,6 +35,21 @@ final class RestaurantController extends AbstractController
 
 
     #[Route('/', name: 'index', methods: ['GET'])]
+    #[OA\Get(
+        summary: 'Lister les restaurants',
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Liste des restaurants',
+                content: new OA\JsonContent(
+                    type: 'array',
+                    items: new OA\Items(ref: new Model(type: Restaurant::class, groups: ['restaurant:list']))
+                )
+            )
+        ]
+    )]
+    #[OA\Tag(name: 'restaurant')]
+    #[Security(name: 'Bearer')]
     public function index(): JsonResponse
     {
         // Je récupère tous les restaurants via le repository
@@ -45,6 +63,28 @@ final class RestaurantController extends AbstractController
     }
 
     #[Route('/add', name: 'new', methods: ['POST'])]
+    #[OA\Post(
+        summary: 'Créer un restaurant',
+        requestBody: new OA\RequestBody(
+            description: 'Payload de création',
+            required: true,
+            content: new OA\JsonContent(ref: new Model(type: Restaurant::class, groups: ['restaurant:write']))
+        ),
+        responses: [
+            new OA\Response(
+                response: 201,
+                description: 'Restaurant créé',
+                content: new OA\JsonContent(
+                    properties: [new OA\Property(property: 'message', type: 'string', example: "restaurant créé avec succée 1 id")],
+                    type: 'object'
+                )
+            ),
+            new OA\Response(response: 400, description: 'Requête invalide'),
+            new OA\Response(response: 401, description: 'Authentification requise')
+        ]
+    )]
+    #[OA\Tag(name: 'restaurant')]
+    #[Security(name: 'AdminBearer')]
     public function new(Request $request): JsonResponse
     {
         // Je désérialise le contenu de la requête pour créer un nouvel objet Restaurant
@@ -76,6 +116,27 @@ final class RestaurantController extends AbstractController
     }
 
     #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\\d+'])]
+    #[OA\Get(
+        summary: 'Afficher un restaurant',
+        parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Restaurant trouvé',
+                content: new OA\JsonContent(ref: new Model(type: Restaurant::class, groups: ['restaurant:detail']))
+            ),
+            new OA\Response(
+                response: 404,
+                description: 'Restaurant introuvable',
+                content: new OA\JsonContent(
+                    properties: [new OA\Property(property: 'message', type: 'string', example: 'Restaurant introuvable')],
+                    type: 'object'
+                )
+            )
+        ]
+    )]
+    #[OA\Tag(name: 'restaurant')]
+    #[Security(name: 'Bearer')]
     public function show(int $id): JsonResponse
     {
         // Je récupère le restaurant demandé
@@ -92,6 +153,29 @@ final class RestaurantController extends AbstractController
     }
 
     #[Route('/{id}', name: 'edit', methods: ['PUT'], requirements: ['id' => '\\d+'])]
+    #[OA\Put(
+        summary: 'Mettre à jour un restaurant',
+        parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
+        requestBody: new OA\RequestBody(
+            description: 'Payload de mise à jour',
+            required: true,
+            content: new OA\JsonContent(ref: new Model(type: Restaurant::class, groups: ['restaurant:write']))
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Restaurant mis à jour',
+                content: new OA\JsonContent(
+                    properties: [new OA\Property(property: 'message', type: 'string', example: "Restaurant d'id 1 modifié avec succès")],
+                    type: 'object'
+                )
+            ),
+            new OA\Response(response: 401, description: 'Authentification requise'),
+            new OA\Response(response: 404, description: 'Restaurant introuvable')
+        ]
+    )]
+    #[OA\Tag(name: 'restaurant')]
+    #[Security(name: 'AdminBearer')]
     public function edit(int $id, Request $request): JsonResponse
     {
         // Je charge l'entité à modifier
@@ -118,6 +202,17 @@ final class RestaurantController extends AbstractController
     }
 
     #[Route('/{id}', name: 'delete', methods: ['DELETE'], requirements: ['id' => '\\d+'])]
+    #[OA\Delete(
+        summary: 'Supprimer un restaurant',
+        parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
+        responses: [
+            new OA\Response(response: 204, description: 'Restaurant supprimé'),
+            new OA\Response(response: 401, description: 'Authentification requise'),
+            new OA\Response(response: 404, description: 'Restaurant introuvable')
+        ]
+    )]
+    #[OA\Tag(name: 'restaurant')]
+    #[Security(name: 'AdminBearer')]
     public function delete(int $id): JsonResponse
     {
         // Je vérifie que le restaurant existe avant de supprimer
@@ -133,6 +228,6 @@ final class RestaurantController extends AbstractController
         $this->manager->flush();
 
         // Je renvoie une confirmation simple
-        return $this->json(['message' => 'Restaurant d\'id ' . $id . ' supprimé avec succès']);
+        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
 }
