@@ -256,3 +256,7 @@ fabric.properties
 /web/css/
 /web/js/
 /Donnée.txt
+###> phpunit/phpunit ###
+/phpunit.xml
+/.phpunit.cache/
+###< phpunit/phpunit ###

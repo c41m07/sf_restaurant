@@ -88,12 +88,12 @@ final class SecurityController extends AbstractController
             description: 'Identifiants de connexion',
             required: true,
             content: new OA\JsonContent(
-                type: 'object',
                 required: ['user', 'password'],
                 properties: [
                     new OA\Property(property: 'user', type: 'string', example: 'test@0.fr'),
                     new OA\Property(property: 'password', type: 'string', example: '123456789')
-                ]
+                ],
+                type: 'object'
             )
         ),
         responses: [
